@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>String Replacer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    textarea, input {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .rule {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+    .rule input {
+      flex: 1;
+    }
+    .remove-btn {
+      flex: 0 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>String Formatter</h2>
+
+  <label for="inputString">Input String:</label>
+  <textarea id="inputString" rows="4"></textarea>
+
+  <h3>Replacement Rules</h3>
+  <div id="rulesContainer">
+    <div class="rule">
+      <input type="text" placeholder="Find" class="find" />
+      <input type="text" placeholder="Replace with" class="replace" />
+      <button class="remove-btn" onclick="removeRule(this)">Remove</button>
+    </div>
+  </div>
+  <button onclick="addRule()">Add Rule</button>
+  <button onclick="applyRules()">Apply Rules</button>
+
+  <h3>Formatted Output:</h3>
+  <textarea id="outputString" rows="4" readonly></textarea>
+
+  <script>
+    function loadRules() {
+      const savedRules = JSON.parse(localStorage.getItem('replacementRules') || '[]');
+      const container = document.getElementById('rulesContainer');
+      container.innerHTML = '';
+      savedRules.forEach(rule => {
+        const ruleDiv = document.createElement('div');
+        ruleDiv.className = 'rule';
+        ruleDiv.innerHTML = `
+          <input type="text" placeholder="Find" class="find" value="${rule.find}" />
+          <input type="text" placeholder="Replace with" class="replace" value="${rule.replace}" />
+          <button class="remove-btn" onclick="removeRule(this)">Remove</button>
+        `;
+        container.appendChild(ruleDiv);
+      });
+      if (savedRules.length === 0) addRule();
+    }
+
+    function saveRules() {
+      const finds = document.querySelectorAll('.find');
+      const replaces = document.querySelectorAll('.replace');
+      const rules = [];
+      for (let i = 0; i < finds.length; i++) {
+        rules.push({ find: finds[i].value, replace: replaces[i].value });
+      }
+      localStorage.setItem('replacementRules', JSON.stringify(rules));
+    }
+
+    function addRule() {
+      const container = document.getElementById('rulesContainer');
+      const rule = document.createElement('div');
+      rule.className = 'rule';
+      rule.innerHTML = `
+        <input type="text" placeholder="Find" class="find" />
+        <input type="text" placeholder="Replace with" class="replace" />
+        <button class="remove-btn" onclick="removeRule(this)">Remove</button>
+      `;
+      container.appendChild(rule);
+    }
+
+    function removeRule(button) {
+      const ruleDiv = button.parentElement;
+      ruleDiv.remove();
+      saveRules();
+    }
+
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function applyRules() {
+      let text = document.getElementById('inputString').value;
+      const finds = document.querySelectorAll('.find');
+      const replaces = document.querySelectorAll('.replace');
+
+      for (let i = 0; i < finds.length; i++) {
+        const find = finds[i].value;
+        const replace = replaces[i].value;
+        if (find) {
+          const escapedFind = escapeRegExp(find);
+          const regex = new RegExp(escapedFind, 'g');
+          text = text.replace(regex, replace);
+        }
+      }
+      document.getElementById('outputString').value = text;
+      saveRules();
+    }
+
+    window.onload = loadRules;
+  </script>
+</body>
+</html>
