@@ -41,6 +41,7 @@
     </div>
   </div>
   <button onclick="addRule()">Add Rule</button>
+  <button onclick="saveRules()">Save Rules</button>
   <button onclick="applyRules()">Apply Rules</button>
 
   <h3>Formatted Output:</h3>
@@ -115,6 +116,11 @@
     }
 
     window.onload = loadRules;
+    document.onvisibilitychange = () => {
+      if (document.visibilityState === "hidden") {
+        saveRules();
+      }
+    };
   </script>
 </body>
 </html>
